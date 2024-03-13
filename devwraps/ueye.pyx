@@ -65,6 +65,10 @@ from .ueyed cimport (
 
 np.import_array()
 
+# Define the ndarray_with_base class
+class ndarray_with_base(np.ndarray):
+    aw_base = None
+
 cdef extern from "numpy/ndarraytypes.h":
     int NPY_ARRAY_CARRAY_RO
 
@@ -714,9 +718,11 @@ cdef class uEye:
         if aw is None:
             raise Exception('Unknown pMem')
 
-        ndarray = np.array(aw, copy=copy)
-        ndarray.base = <PyObject*>aw
-        Py_INCREF(aw)
+		# ndarray = np.array(aw, copy=copy)
+        # ndarray.base = <PyObject*>aw
+        # Py_INCREF(aw)
+        ndarray = np.array(aw, copy=copy).view(ndarray_with_base)
+        ndarray.aw_base = aw  # aw is kept alive as long as ndarray is alive
         
         return ndarray
 

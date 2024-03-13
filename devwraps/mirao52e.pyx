@@ -558,7 +558,7 @@ cdef class Mirao52e:
         elif array.shape[0] > max_size:
             raise Exception(f'array.shape[0] must be <= {max_size}')
 
-        for j in range(array.size[0]):
+        for j in range(array.shape[0]):
             for i in range(MRO_NB_COMMAND_VALUES):
                 val = array[j, i]
 

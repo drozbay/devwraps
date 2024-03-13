@@ -1,7 +1,36 @@
 # https://stackoverflow.com/questions/5648931
 Function Get-Anaconda-Path {
     process {
-        $bases = "Registry::HKEY_LOCAL_MACHINE\Software\Python\ContinuumAnalytics", "Registry::HKEY_CURRENT_USER\Software\Python\ContinuumAnalytics"
+        $bases = "Registry::HKEY_CURRENT_USER\Software\Python\PythonCore"
+        if (-not (Test-Path $bases)) {
+            Write-Error "Cannot find Anaconda. Is Anaconda for Python 3 installed (https://www.anaconda.com/download)?" -ErrorAction Stop
+        }
+
+        $subs = (Get-Item -LiteralPath $bases).GetSubKeyNames()
+        $addr = ""
+        foreach ($sub in $subs) {
+            $versionString = $sub -as [decimal]
+            if ($versionString -ge 3) {
+                $addr = "$bases\$sub\InstallPath"
+                break
+            }
+        }
+
+        if ($addr.Length -lt 1) {
+            Write-Error "Anaconda for Python 3+ must be installed (Anaconda for Python 2 is not supported)" -ErrorAction Stop
+        }
+        else {
+            $item = Get-Item -LiteralPath $addr
+            $anacondaPath = $item.GetValue("")
+			Write-Host "Anaconda Path: $anacondaPath"  # Display the path on the screen
+            return $anacondaPath
+        }
+    }
+}
+
+Function Get-Anaconda-Path-Old {
+    process {
+        $bases = "Registry::HKEY_LOCAL_MACHINE\Software\Python\ContinuumAnalytics", "Registry::HKEY_CURRENT_USER\Software\Python\ContinuumAnalytics", "Registry::HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore"
         $found = -1
         for ($i = 0; $i -lt $bases.Count; $i++) {
             if (Test-Path $bases[$i]) {
