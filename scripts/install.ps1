@@ -1,8 +1,16 @@
-Create-Anaconda-Environment -environmentName $global:dmlibEnvironmentName
+$config = Get-Content -Path .\config.txt | ConvertFrom-StringData
+$environmentName = $config.ANACONDA_ENV_NAME
+
+if (-not $environmentName) {
+	Write-Host "Anaconda environment name is not set. Please check the config.txt file."
+	exit
+}
+
+Create-Anaconda-Environment -environmentName $environmentName
 if (-not $?) {
 	exit
 }
-Activate-Anaconda -environmentName $global:dmlibEnvironmentName
+Activate-Anaconda -environmentName $environmentName
 if (-not $?) {
 	exit
 }

@@ -1,7 +1,4 @@
 # https://stackoverflow.com/questions/5648931
-
-$global:dmlibEnvironmentName = "dmlib_env"
-
 Function Create-Anaconda-Environment {
     param (
         [Parameter(Mandatory=$true)]
