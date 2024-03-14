@@ -17,7 +17,7 @@ Function Create-Anaconda-Environment {
             Write-Host "Conda environment $environmentName already exists."
         } else {
             Write-Host "Creating conda environment $environmentName..."
-            & $condaPath create --name $environmentName python=3.8 -y
+            & $condaPath create --name $environmentName python=3.11.7 -y
             if ($?) {
                 Write-Host "Conda environment $environmentName created successfully."
             } else {
