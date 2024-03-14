@@ -1,4 +1,35 @@
 # https://stackoverflow.com/questions/5648931
+
+$global:dmlibEnvironmentName = "dmlib_env"
+
+Function Create-Anaconda-Environment {
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$environmentName
+    )
+
+    process {
+        $anacondaPath = Get-Anaconda-Path
+        $condaPath = Join-Path -Path $anacondaPath -ChildPath "Scripts\conda.exe"
+        if (-not (Test-Path $condaPath)) {
+            Write-Error "Cannot find conda. Is Anaconda for Python 3 installed (https://www.anaconda.com/download)?" -ErrorAction Stop
+        }
+
+        $envPath = Join-Path -Path $anacondaPath -ChildPath "envs\$environmentName"
+        if (Test-Path $envPath) {
+            Write-Host "Conda environment $environmentName already exists."
+        } else {
+            Write-Host "Creating conda environment $environmentName..."
+            & $condaPath create --name $environmentName python=3.8 -y
+            if ($?) {
+                Write-Host "Conda environment $environmentName created successfully."
+            } else {
+                Write-Error "Failed to create conda environment $environmentName."
+            }
+        }
+    }
+}
+
 Function Get-Anaconda-Path {
     process {
         $bases = "Registry::HKEY_CURRENT_USER\Software\Python\PythonCore"
@@ -28,49 +59,21 @@ Function Get-Anaconda-Path {
     }
 }
 
-Function Get-Anaconda-Path-Old {
-    process {
-        $bases = "Registry::HKEY_LOCAL_MACHINE\Software\Python\ContinuumAnalytics", "Registry::HKEY_CURRENT_USER\Software\Python\ContinuumAnalytics", "Registry::HKEY_CURRENT_USER\SOFTWARE\Python\PythonCore"
-        $found = -1
-        for ($i = 0; $i -lt $bases.Count; $i++) {
-            if (Test-Path $bases[$i]) {
-                $found = $i
-                break;
-            }
-        }
-
-        if ($found -lt 0) {
-            Write-Error "Cannot find Anaconda. Is Anaconda for Python 3 installed (https://www.anaconda.com/download)?" -ErrorAction Stop
-        }
-
-        $base = $bases[$i]
-        $subs = (Get-Item -LiteralPath $base).GetSubKeyNames()
-        $addr = ""
-        for ($i = 0; $i -lt $subs.Count; $i++) {
-            $item = Get-Item -LiteralPath ($base + "\" + $subs[$i])
-            $version = $item.GetValue("SysVersion") -as [decimal]
-            if ($version -gt 3) {
-                $addr = $base + "\" + $subs[$i]
-            }
-        }
-
-        if ($addr.Length -lt 1) {
-            Write-Error "Anaconda for Python 3+ must be installed (Anaconda for Python 2 is not supported)" -ErrorAction Stop
-        }
-        else {
-            $item = Get-Item -LiteralPath "$addr\InstallPath"
-            $item = ($item).GetValue("ExecutablePath")
-            return $item
-        }
-    }
-}
 Function Activate-Anaconda {
-	process {
-		$p = Get-Anaconda-Path
-        $p = (Split-Path -Parent -Path $p)
-		# https://github.com/BCSharp/PSCondaEnvs
-		$env:Path = "$p;$p\Library\mingw-w64\bin;$p\Library\usr\bin;$p\Library\bin;$p\Scripts;$p\bin;" + $env:Path
-		$env:CONDA_DEFAULT_ENV = "root"
-        $env:CONDA_PREFIX = $p
-	}
+    param (
+        [Parameter(Mandatory=$true)]
+        [string]$environmentName
+    )
+
+    process {
+        Write-Host "Activating Anaconda environment: $environmentName"
+        $anacondaPath = Get-Anaconda-Path
+        $anacondaPath = (Split-Path -Parent -Path $anacondaPath)
+        $envPath = Join-Path -Path $anacondaPath -ChildPath "envs\$environmentName"
+
+        # https://github.com/BCSharp/PSCondaEnvs
+        $env:Path = "$envPath;$envPath\Library\mingw-w64\bin;$envPath\Library\usr\bin;$envPath\Library\bin;$envPath\Scripts;$envPath\bin;" + $env:Path
+        $env:CONDA_DEFAULT_ENV = $environmentName
+        $env:CONDA_PREFIX = $envPath
+    }
 }

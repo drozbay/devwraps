@@ -1,4 +1,8 @@
-Activate-Anaconda
+Create-Anaconda-Environment -environmentName $global:dmlibEnvironmentName
+if (-not $?) {
+	exit
+}
+Activate-Anaconda -environmentName $global:dmlibEnvironmentName
 if (-not $?) {
 	exit
 }
@@ -6,7 +10,7 @@ pip uninstall -y devwraps
 if (-not $?) {
 	exit
 }
-rm dist\*.whl -ErrorAction SilentlyContinue
+Remove-Item dist\*.whl -ErrorAction SilentlyContinue
 python setup.py bdist_wheel
 if (-not $?) {
 	exit
