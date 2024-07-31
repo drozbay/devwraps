@@ -1,0 +1,13 @@
+name: devwraps_env
+
+channels:
+  - conda-forge
+  - anaconda
+  - defaults
+
+dependencies:
+  - python=3.6
+  - numpy
+  - cython
+  - setuptools
+  - wheel
