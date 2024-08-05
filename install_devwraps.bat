@@ -6,7 +6,10 @@ echo Installing devwraps...
 if "%CONDA_DEFAULT_ENV%" == "" (
     set INSTALL_DIR=%~dp0conda
     call :CreateCondaEnvironment
-    if %errorlevel% neq 0 || not exist %CONDA_PREFIX% (
+    if %errorlevel% neq 0 (
+        echo Error: Conda environment setup failed.
+        goto exit_error
+    ) else if not exist %CONDA_PREFIX% (
         echo Error: Conda environment setup failed.
         goto exit_error
     )
@@ -68,6 +71,12 @@ if not exist %INSTALL_DIR% (
     )
 )
 
+:: Set up temp folder
+set CUSTOM_TEMP=%~dp0temp
+if not exist "%CUSTOM_TEMP%" mkdir "%CUSTOM_TEMP%"
+set TEMP=%CUSTOM_TEMP%
+set TMP=%CUSTOM_TEMP%
+
 :: Check if Portable Miniconda is already installed
 if not exist "%INSTALL_DIR%\Scripts\conda.exe" (
     echo Portable Miniconda not found. Downloading and installing...
@@ -116,11 +125,13 @@ echo devwraps installation complete.
 exit /b 0
 
 :exit_error
+if %CUSTOM_TEMP% == %TEMP% rmdir /s /q %CUSTOM_TEMP%
 echo Press any key to exit...
 pause >nul
 exit /b 1
 
 :exit_success
+if %CUSTOM_TEMP% == %TEMP% rmdir /s /q %CUSTOM_TEMP%
 echo Press any key to exit...
 pause >nul
 exit /b 0
