@@ -1,9 +1,11 @@
 @echo off
 setlocal enabledelayedexpansion
+set IS_FROM_SCRIPT=1
 
 echo Installing devwraps...
 :: Check if we're in a Conda environment (eg. from another script)
 if "%CONDA_DEFAULT_ENV%" == "" (
+    set IS_FROM_SCRIPT=0
     set INSTALL_DIR=%~dp0conda
     call :CreateCondaEnvironment
     if %errorlevel% neq 0 (
@@ -125,13 +127,17 @@ echo devwraps installation complete.
 exit /b 0
 
 :exit_error
-if %CUSTOM_TEMP% == %TEMP% rmdir /s /q %CUSTOM_TEMP%
 echo Press any key to exit...
 pause >nul
 exit /b 1
 
 :exit_success
-if %CUSTOM_TEMP% == %TEMP% rmdir /s /q %CUSTOM_TEMP%
-echo Press any key to exit...
-pause >nul
+if %CUSTOM_TEMP% == %TEMP% (
+    rmdir /s /q %CUSTOM_TEMP% >nul 2>&1
+)
+if %IS_FROM_SCRIPT% == 0 (
+    echo To use devwraps, activate the Conda environment: %CONDA_DEFAULT_ENV%
+    echo Press any key to continue...
+    pause >nul
+)
 exit /b 0

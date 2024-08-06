@@ -1,1 +1,0 @@
-ANACONDA_ENV_NAME=devwraps_env
