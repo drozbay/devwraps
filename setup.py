@@ -168,7 +168,7 @@ def make_bmc(fillout, remove, pkgdata):
     except ValueError:
         return
 
-    iname = r'^BmcApi\.h$'
+    iname = r'(?i)^BmcApi\.h$'
     try:
         include_path = path.dirname(find_file(tops, iname, expats=[]))
     except ValueError:
